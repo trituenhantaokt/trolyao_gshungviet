@@ -96,7 +96,8 @@ with st.chat_message("assistant"):
     ):
         if hasattr(chunk, "choices") and chunk.choices:
             response += chunk.choices[0].delta.content or ""
-            response_container.markdown(format_fractions(response), unsafe_allow_html=True)  # Cập nhật nội dung theo thời gian thực
+           response_container.markdown(f"$$ {format_fractions(response)} $$", unsafe_allow_html=True)
+  # Cập nhật nội dung theo thời gian thực
 
 # Lưu phản hồi đã chỉnh sửa vào session
 st.session_state.messages.append({"role": "assistant", "content": response})
