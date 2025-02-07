@@ -65,9 +65,22 @@ for message in st.session_state.messages:
 if prompt := st.chat_input("Bạn nhập nội dung cần trao đổi ở đây nhé?"):
 
     # Lưu trữ và hiển thị tin nhắn của người dùng.
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    import datetime
+
+# Định nghĩa hàm ghi log
+def log_user_input(user_input):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    with open("user_questions.log", "a", encoding="utf-8") as log_file:
+        log_file.write(f"[{timestamp}] {user_input}\n")
+
+# Lưu trữ và hiển thị tin nhắn của người dùng.
+st.session_state.messages.append({"role": "user", "content": prompt})
+with st.chat_message("user"):
+    st.markdown(prompt)
+
+# Ghi lại câu hỏi vào file log
+log_user_input(prompt)
+
 
     # Tạo phản hồi từ API OpenAI.
     stream = client.chat.completions.create(
