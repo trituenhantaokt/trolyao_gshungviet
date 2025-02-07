@@ -78,19 +78,25 @@ if prompt := st.chat_input("Bạn nhập nội dung cần trao đổi ở đây 
         ],
         stream=True,
     )
-# Lấy toàn bộ phản hồi từ OpenAI
-response = "".join([chunk for chunk in stream])
-
-# Chuyển đổi các phân số dạng "a/b" thành LaTeX
 import re
+
+# Hàm chuyển đổi phân số từ dạng "a/b" sang LaTeX "$\frac{a}{b}$"
 def format_fractions(text):
     return re.sub(r"(\d+)/(\d+)", r"$\frac{\1}{\2}$", text)
 
-formatted_response = format_fractions(response)
+# Nhận phản hồi từ OpenAI
+response = ""
 
-# Hiển thị nội dung với hỗ trợ Markdown LaTeX
 with st.chat_message("assistant"):
-    st.markdown(formatted_response, unsafe_allow_html=True)
+    response_container = st.empty()  # Tạo một container để cập nhật nội dung dần dần
+    for chunk in client.chat.completions.create(
+        model=rfile("module_chatgpt.txt"),
+        messages=[{"role": m["role"], "content": m["content"]} for m in st.session_state.messages],
+        stream=True,
+    ):
+        if hasattr(chunk, "choices") and chunk.choices:
+            response += chunk.choices[0].delta.content or ""
+            response_container.markdown(format_fractions(response), unsafe_allow_html=True)  # Cập nhật nội dung theo thời gian thực
 
-# Lưu phản hồi vào session
-st.session_state.messages.append({"role": "assistant", "content": formatted_response})
+# Lưu phản hồi đã chỉnh sửa vào session
+st.session_state.messages.append({"role": "assistant", "content": response})
