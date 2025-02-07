@@ -78,8 +78,19 @@ if prompt := st.chat_input("Bạn nhập nội dung cần trao đổi ở đây 
         ],
         stream=True,
     )
+# Lấy toàn bộ phản hồi từ OpenAI
+response = "".join([chunk for chunk in stream])
 
-    # Hiển thị và lưu phản hồi của trợ lý.
-    with st.chat_message("assistant"):
-        response = st.write_stream(stream)
-    st.session_state.messages.append({"role": "assistant", "content": response})
+# Chuyển đổi các phân số dạng "a/b" thành LaTeX
+import re
+def format_fractions(text):
+    return re.sub(r"(\d+)/(\d+)", r"$\frac{\1}{\2}$", text)
+
+formatted_response = format_fractions(response)
+
+# Hiển thị nội dung với hỗ trợ Markdown LaTeX
+with st.chat_message("assistant"):
+    st.markdown(formatted_response, unsafe_allow_html=True)
+
+# Lưu phản hồi vào session
+st.session_state.messages.append({"role": "assistant", "content": formatted_response})
